@@ -14,3 +14,6 @@ htmlcov/
 .cache
 coverage.xml
 *,cover
+
+# jetbrains
+.idea/
