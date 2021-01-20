@@ -1,0 +1,9 @@
+[run]
+; Include only source code actually in this repository.
+include = ./*
+
+; Omit manage.py. as there's nothing custom in there.
+omit =
+    manage.py
+    venv/**
+    automated_tests/*
