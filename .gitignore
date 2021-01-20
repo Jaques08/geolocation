@@ -5,3 +5,12 @@
 .venv
 venv/
 ENV/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*,cover
