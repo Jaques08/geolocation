@@ -11,7 +11,11 @@ from django.forms.models import model_to_dict
 
 from environs import Env
 
+# initialise logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+stream_handler = logging.StreamHandler()
+logger.addHandler(stream_handler)
 
 env = Env()
 env.read_env()
@@ -38,11 +42,11 @@ class GeoResultsView(viewsets.ModelViewSet):
             self.validate_dict_contains_required_fields(ap, ["bssid", "ssid"])
             existing_data = GeoResults.get_latest(ap["bssid"], ap["ssid"])
             if existing_data:
-                logging.info("Found existing results.")
+                logger.info("Found existing results.")
                 geolocation = model_to_dict(existing_data)['geolocation']
             elif geolocation:
-                logging.info("Found existing results but some GeoResults have not yet been created")
-                logging.info("Creating the GeoResults.")
+                logger.info("Found existing results but some GeoResults have not yet been created")
+                logger.info("Creating the GeoResults.")
                 result = ap
                 result["geolocation"] = geolocation
                 a = GeoResults(
@@ -56,8 +60,11 @@ class GeoResultsView(viewsets.ModelViewSet):
                     "signalToNoiseRatio": 0
                 })
         if not existing_data:
-            logging.info("Couln't find any previous results. Fetching data now.")
-            geolocation_request = requests.post(env.str("GEOLOCATION_URL"), json=collected_data)
+            url = f"{env.str('GEOLOCATION_URL')}/v1/geolocate?key={env.str('GEOLOCATION_KEY')}"
+            logger.info(f"Couln't find any previous results. Fetching data now with following url {url}")
+            geolocation_request = requests.post(url, json=collected_data)
+            if geolocation.status_code != 200:
+                raise ValidationError(geolocation_request.json())
             geolocation = geolocation_request.json()
             for ap in apscan_data:
                 result = ap
