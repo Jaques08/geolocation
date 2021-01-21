@@ -1,3 +1,5 @@
+"""Views model for geolocation api"""
+import logging
 from rest_framework import viewsets
 from .serializers import GeoResultsSerializer
 from .models import GeoResults
@@ -8,6 +10,8 @@ import requests
 from django.forms.models import model_to_dict
 
 from environs import Env
+
+logger = logging.getLogger(__name__)
 
 env = Env()
 env.read_env()
@@ -34,8 +38,11 @@ class GeoResultsView(viewsets.ModelViewSet):
             self.validate_dict_contains_required_fields(ap, ["bssid", "ssid"])
             existing_data = GeoResults.get_latest(ap["bssid"], ap["ssid"])
             if existing_data:
+                logging.info("Found existing results.")
                 geolocation = model_to_dict(existing_data)['geolocation']
-            if geolocation and not existing_data:
+            elif geolocation:
+                logging.info("Found existing results but some GeoResults have not yet been created")
+                logging.info("Creating the GeoResults.")
                 result = ap
                 result["geolocation"] = geolocation
                 a = GeoResults(
@@ -49,6 +56,7 @@ class GeoResultsView(viewsets.ModelViewSet):
                     "signalToNoiseRatio": 0
                 })
         if not existing_data:
+            logging.info("Couln't find any previous results. Fetching data now.")
             geolocation_request = requests.post(env.str("GEOLOCATION_URL"), json=collected_data)
             geolocation = geolocation_request.json()
             for ap in apscan_data:

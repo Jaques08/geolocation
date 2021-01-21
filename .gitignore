@@ -17,3 +17,6 @@ coverage.xml
 
 # jetbrains
 .idea/
+
+#Python
+__pycache__/
