@@ -1,0 +1,22 @@
+# dotenv
+.env
+
+# virtualenv
+.venv
+venv/
+ENV/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*,cover
+
+# jetbrains
+.idea/
+
+#Python
+__pycache__/
