@@ -14,6 +14,7 @@ class TestGeolocationApi(TestCase):
         """Set up test class."""
         self.client = Client()
         self.factory = APIRequestFactory()
+        self.geo_url = f"{env.str('GEOLOCATION_URL')}/v1/geolocate?key={env.str('GEOLOCATION_KEY')}"
 
     @responses.activate
     def test_create_georesults_new(self):
@@ -28,7 +29,7 @@ class TestGeolocationApi(TestCase):
             "apscan_data": [
                 {
                     "band": "2.4",
-                    "bssid": "9c:b2:b2:66:c1:be",
+                    "bssid": "aa:aa:aa:aa:aa:aa",
                     "channel": "5",
                     "frequency": 2432,
                     "rates": "1.0 - 135.0 Mbps",
@@ -41,7 +42,7 @@ class TestGeolocationApi(TestCase):
                 }
             ]
         }
-        responses.add(responses.POST, env.str("GEOLOCATION_URL"), status=200,json=mock_response)
+        responses.add(responses.POST, self.geo_url, status=200,json=mock_response)
         response = self.client.post('/georesults/', json.dumps(test_ap_data), content_type="application/json")
         self.assertEqual(json.dumps(mock_response).encode(), response.content)
 
@@ -58,7 +59,7 @@ class TestGeolocationApi(TestCase):
             "apscan_data": [
                 {
                     "band": "2.4",
-                    "bssid": "9c:b2:b2:66:c1:be",
+                    "bssid": "aa:aa:aa:aa:aa:aa",
                     "channel": "5",
                     "frequency": 2432,
                     "rates": "1.0 - 135.0 Mbps",
@@ -71,7 +72,7 @@ class TestGeolocationApi(TestCase):
                 }
             ]
         }
-        responses.add(responses.POST, env.str("GEOLOCATION_URL"), status=200,json=mock_response)
+        responses.add(responses.POST, self.geo_url, status=200,json=mock_response)
         self.client.post('/georesults/', json.dumps(test_ap_data), content_type="application/json")
         response = self.client.post('/georesults/', json.dumps(test_ap_data), content_type="application/json")
         self.assertEqual(json.dumps(mock_response).encode(), response.content)
@@ -90,7 +91,7 @@ class TestGeolocationApi(TestCase):
                 {
                     "id": 3,
                     "band": "2.4",
-                    "bssid": "9c:b2:b2:66:c1:be",
+                    "bssid": "aa:aa:aa:aa:aa:aa",
                     "channel": "5",
                     "frequency": 2432,
                     "rates": "1.0 - 135.0 Mbps",
@@ -103,7 +104,7 @@ class TestGeolocationApi(TestCase):
                 }
             ]
         }
-        responses.add(responses.POST, env.str("GEOLOCATION_URL"), status=200, json=mock_response)
+        responses.add(responses.POST, self.geo_url, status=200, json=mock_response)
         self.client.post('/georesults/', json.dumps(test_ap_data), content_type="application/json")
         response = self.client.get('/georesults/')
         expected_result = test_ap_data["apscan_data"]

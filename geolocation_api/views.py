@@ -37,22 +37,22 @@ class GeoResultsView(viewsets.ModelViewSet):
           "considerIp": 'false',
           "wifiAccessPoints": []
         }
-        geolocation = None
+        geolocation_result = None
         for ap in apscan_data:
             self.validate_dict_contains_required_fields(ap, ["bssid", "ssid"])
             existing_data = GeoResults.get_latest(ap["bssid"], ap["ssid"])
             if existing_data:
                 logger.info("Found existing results.")
-                geolocation = model_to_dict(existing_data)['geolocation']
-            elif geolocation:
+                geolocation_result = model_to_dict(existing_data)['geolocation']
+            elif geolocation_result:
                 logger.info("Found existing results but some GeoResults have not yet been created")
                 logger.info("Creating the GeoResults.")
                 result = ap
-                result["geolocation"] = geolocation
-                a = GeoResults(
+                result["geolocation"] = geolocation_result
+                geo_res = GeoResults(
                     **result
                 )
-                a.save()
+                geo_res.save()
             else:
                 collected_data["wifiAccessPoints"].append({
                     "macAddress": ap["bssid"],
@@ -63,17 +63,17 @@ class GeoResultsView(viewsets.ModelViewSet):
             url = f"{env.str('GEOLOCATION_URL')}/v1/geolocate?key={env.str('GEOLOCATION_KEY')}"
             logger.info(f"Couln't find any previous results. Fetching data now with following url {url}")
             geolocation_request = requests.post(url, json=collected_data)
-            if geolocation.status_code != 200:
+            if geolocation_request.status_code != 200:
                 raise ValidationError(geolocation_request.json())
-            geolocation = geolocation_request.json()
+            geolocation_result = geolocation_request.json()
             for ap in apscan_data:
                 result = ap
-                result["geolocation"] = geolocation
-                a = GeoResults(
+                result["geolocation"] = geolocation_result
+                geo_res = GeoResults(
                     **result
                 )
-                a.save()
-        return JsonResponse(geolocation)
+                geo_res.save()
+        return JsonResponse(geolocation_result)
 
     @staticmethod
     def validate_dict_contains_required_fields(
